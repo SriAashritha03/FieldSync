@@ -4,6 +4,8 @@ import FormInput from '../components/FormInput'
 import Loading from '../components/Loading'
 import { fetchSummary } from '../services/aiService'
 import { fetchSubmissions } from '../services/submissionService'
+import ReactMarkdown from 'react-markdown'
+import * as XLSX from 'xlsx'
 
 const Reports = () => {
 	const today = new Date().toISOString().split('T')[0]
@@ -56,37 +58,6 @@ const Reports = () => {
 	const handleSubmit = (event) => {
 		event.preventDefault()
 		loadReport(filters)
-	}
-
-	const handleExportCSV = () => {
-		if (!rows || rows.length === 0) return
-		const headers = ['Beneficiary ID', 'Project', 'Activity', 'Region', 'Beneficiaries', 'Date', 'Issues']
-		const csvRows = [headers.join(',')]
-		rows.forEach(item => {
-			const r = [
-				item.beneficiary?.identifier || 'Unknown',
-				item.project?.code || 'N/A',
-				item.activityType,
-				item.region,
-				item.beneficiaryCount,
-				new Date(item.activityDate).toLocaleDateString(),
-				`"${(item.issues || 'No issues').replace(/"/g, '""')}"`
-			]
-			csvRows.push(r.join(','))
-		})
-		const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
-		const url = window.URL.createObjectURL(blob)
-		const a = document.createElement('a')
-		a.setAttribute('hidden', '')
-		a.setAttribute('href', url)
-		a.setAttribute('download', `fieldsync-report-${today}.csv`)
-		document.body.appendChild(a)
-		a.click()
-		document.body.removeChild(a)
-	}
-
-	const handleExportPDF = () => {
-		window.print()
 	}
 
 	if (loading) {
@@ -144,22 +115,18 @@ const Reports = () => {
 						<button type="submit" className="btn btn-primary">
 							Refresh report
 						</button>
-						<button type="button" className="btn btn-ghost" onClick={handleExportCSV}>
-							Export CSV
-						</button>
-						<button type="button" className="btn btn-ghost" onClick={handleExportPDF}>
-							Print PDF
-						</button>
 					</div>
 				</form>
 			</div>
 
 			<div className="card">
 				<div className="card-header">
-					<h3>Summary</h3>
-					<span className="badge">AI insight</span>
+					<h3>Detailed Report</h3>
+					<span className="badge">AI generated</span>
 				</div>
-				<p className="summary-text">{summary}</p>
+				<div className="summary-text markdown-body">
+					<ReactMarkdown>{summary}</ReactMarkdown>
+				</div>
 			</div>
 
 			<div className="card">

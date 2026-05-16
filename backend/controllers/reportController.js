@@ -18,11 +18,11 @@ const getAiModel = () => {
     return null
   }
 
-  const modelName = process.env.GOOGLE_MODEL || 'gemini-pro'
+  const modelName = process.env.GOOGLE_MODEL || 'gemini-3-flash-preview'
   const genAI = new GoogleGenerativeAI(apiKey)
   return genAI.getGenerativeModel({
     model: modelName,
-    generationConfig: { temperature: 0.3, maxOutputTokens: 280 },
+    generationConfig: { temperature: 0.3, maxOutputTokens: 1500 },
   })
 }
 
@@ -68,9 +68,15 @@ const extractJsonArray = (text) => {
 }
 
 const buildSummaryPrompt = (stats) => {
-  return `You are an NGO reporting assistant. Write a concise 2-3 sentence summary for leadership.
-Mention totals, unique reach if provided, top activity, top region, major issue, and funds disbursed.
-Use plain text only, no bullet points.
+  return `You are an NGO reporting analyst. Write a highly detailed, comprehensive, multi-paragraph report for leadership. DO NOT write a short summary.
+Structure your report with clear markdown headers (##) and bullet points.
+Include the following detailed sections:
+- ## Executive Summary
+- ## Key Metrics Breakdown (Totals, Unique Reach, Funds)
+- ## Regional Performance Analysis
+- ## Top Activities and Impact
+- ## Major Issues and Recommendations
+Provide thorough analysis for each section based on this data:
 Stats: ${JSON.stringify(stats)}`
 }
 
@@ -128,8 +134,23 @@ export const getSummary = async (req, res, next) => {
     const topRegion = regionStats[0]?._id || 'N/A'
     const topActivity = activityStats[0]?._id || 'N/A'
     const topIssue = issuesAgg[0]?._id || 'No major issues reported'
+    const baseSummaryText = `## Executive Summary
+From **${start.toDateString()}** to **${end.toDateString()}**, the field team successfully recorded **${totalSubmissions}** activities across all operations. These initiatives reached a total of **${totalBeneficiaries}** beneficiaries, of which **${uniqueBeneficiaries}** were unique individuals.
 
-    const baseSummaryText = `From ${start.toDateString()} to ${end.toDateString()}, ${totalSubmissions} activities were recorded with ${totalBeneficiaries} beneficiaries (${uniqueBeneficiaries} unique). Top activity: ${topActivity}. Top region: ${topRegion}. Major issue: ${topIssue}. Funds disbursed: ${totalFunds}.`
+## Key Metrics Breakdown
+- **Total Activities Logged:** ${totalSubmissions}
+- **Total Beneficiaries Reached:** ${totalBeneficiaries}
+- **Unique Beneficiaries:** ${uniqueBeneficiaries}
+- **Total Funds Disbursed:** ₹${totalFunds}
+
+## Regional Performance Analysis
+The most active region during this period was **${topRegion}**. Field workers in this area conducted the highest volume of outreach and community engagement compared to other sectors.
+
+## Top Activities and Impact
+The primary activity driving these numbers was **${topActivity}**. This indicates a strong focus on this particular type of intervention during this reporting cycle, resulting in significant community participation.
+
+## Major Issues and Operational Bottlenecks
+The most frequently reported issue from the field was **"${topIssue}"**. Leadership should review logistical and operational protocols to mitigate this challenge in future deployments.`
     const statsPayload = {
       range: { from: start.toISOString(), to: end.toISOString() },
       totalSubmissions,

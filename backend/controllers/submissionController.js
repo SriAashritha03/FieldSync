@@ -290,11 +290,14 @@ export const getSubmissions = async (req, res, next) => {
       limit,
       projectCode,
       beneficiaryId,
+      workerId,
     } = req.query
     const filter = {}
 
     if (req.user.role !== 'admin') {
       filter.worker = req.user._id
+    } else if (workerId) {
+      filter.worker = workerId
     }
 
     if (region) {

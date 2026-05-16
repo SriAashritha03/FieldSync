@@ -71,7 +71,7 @@ const Sidebar = () => {
 								isActive ? 'nav-link active' : 'nav-link'
 							}
 						>
-							Worker view
+							All Submissions
 						</NavLink>
 						<NavLink
 							to="/worker/submit"
