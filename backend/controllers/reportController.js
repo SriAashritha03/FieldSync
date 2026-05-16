@@ -69,6 +69,7 @@ const extractJsonArray = (text) => {
 
 const buildSummaryPrompt = (stats) => {
   return `You are an NGO reporting analyst. Write a highly detailed, comprehensive, multi-paragraph report for leadership. DO NOT write a short summary.
+DO NOT include any formal memo headers (like TO:, FROM:, DATE:, SUBJECT:). Start directly with the Executive Summary.
 Structure your report with clear markdown headers (##) and bullet points.
 Include the following detailed sections:
 - ## Executive Summary
