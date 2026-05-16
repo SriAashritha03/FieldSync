@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, enum: ['admin', 'worker'], default: 'worker' },
     region: { type: String, default: 'Unassigned' },
+    empId: { type: String, required: true, unique: true },
+    status: { type: String, enum: ['pending', 'approved', 'rejected', 'inactive'], default: 'pending' },
+    assignedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
   },
   { timestamps: true }
 )

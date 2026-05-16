@@ -185,6 +185,16 @@
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.chart-card {
+  min-height: 340px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

@@ -18,7 +18,7 @@ const getAiModel = () => {
     return null
   }
 
-  const modelName = process.env.GOOGLE_MODEL || 'gemini-1.5-flash'
+  const modelName = process.env.GOOGLE_MODEL || 'gemini-pro'
   const genAI = new GoogleGenerativeAI(apiKey)
   return genAI.getGenerativeModel({
     model: modelName,

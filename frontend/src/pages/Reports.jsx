@@ -58,6 +58,37 @@ const Reports = () => {
 		loadReport(filters)
 	}
 
+	const handleExportCSV = () => {
+		if (!rows || rows.length === 0) return
+		const headers = ['Beneficiary ID', 'Project', 'Activity', 'Region', 'Beneficiaries', 'Date', 'Issues']
+		const csvRows = [headers.join(',')]
+		rows.forEach(item => {
+			const r = [
+				item.beneficiary?.identifier || 'Unknown',
+				item.project?.code || 'N/A',
+				item.activityType,
+				item.region,
+				item.beneficiaryCount,
+				new Date(item.activityDate).toLocaleDateString(),
+				`"${(item.issues || 'No issues').replace(/"/g, '""')}"`
+			]
+			csvRows.push(r.join(','))
+		})
+		const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+		const url = window.URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.setAttribute('hidden', '')
+		a.setAttribute('href', url)
+		a.setAttribute('download', `fieldsync-report-${today}.csv`)
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+	}
+
+	const handleExportPDF = () => {
+		window.print()
+	}
+
 	if (loading) {
 		return <Loading label="Preparing report" />
 	}
@@ -109,9 +140,17 @@ const Reports = () => {
 							placeholder="Issue, activity, notes"
 						/>
 					</div>
-					<button type="submit" className="btn btn-primary">
-						Refresh report
-					</button>
+					<div style={{ display: 'flex', gap: '10px' }} className="no-print">
+						<button type="submit" className="btn btn-primary">
+							Refresh report
+						</button>
+						<button type="button" className="btn btn-ghost" onClick={handleExportCSV}>
+							Export CSV
+						</button>
+						<button type="button" className="btn btn-ghost" onClick={handleExportPDF}>
+							Print PDF
+						</button>
+					</div>
 				</form>
 			</div>
 

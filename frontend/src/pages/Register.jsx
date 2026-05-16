@@ -13,13 +13,14 @@ const Register = () => {
 	const navigate = useNavigate()
 	const [form, setForm] = useState({
 		name: '',
-        id:'',
+		empId: '',
 		email: '',
 		password: '',
 		role: 'worker',
 		region: '',
 	})
 	const [error, setError] = useState('')
+	const [status, setStatus] = useState(null)
 	const [loading, setLoading] = useState(false)
 
 	const handleChange = (event) => {
@@ -33,9 +34,14 @@ const Register = () => {
 
 		try {
 			const data = await register(form)
-			navigate(data.user.role === 'admin' ? '/admin' : '/worker', {
-				replace: true,
-			})
+			if (data.user.status === 'pending') {
+				setStatus({ type: 'success', message: 'Registration successful! Please wait for admin approval.' })
+				setForm({ name: '', empId: '', email: '', password: '', role: 'worker', region: '' })
+			} else {
+				navigate(data.user.role === 'admin' ? '/admin' : '/worker', {
+					replace: true,
+				})
+			}
 		} catch (err) {
 			setError(err.response?.data?.message || 'Unable to register')
 		} finally {
@@ -56,9 +62,19 @@ const Register = () => {
 					<FormInput
 						id="name"
 						label="Full name"
+						name="name"
 						value={form.name}
 						onChange={handleChange}
 						placeholder="Amina Rahman"
+						required
+					/>
+					<FormInput
+						id="empId"
+						label="Employee ID"
+						name="empId"
+						value={form.empId}
+						onChange={handleChange}
+						placeholder="EMP-12345"
 						required
 					/>
 					<FormInput
@@ -90,12 +106,14 @@ const Register = () => {
 					<FormInput
 						id="region"
 						label="Primary region"
+						name="region"
 						value={form.region}
 						onChange={handleChange}
 						placeholder="Northern Zone"
 					/>
 
 					{error && <div className="notice error">{error}</div>}
+					{status && <div className={`notice ${status.type}`}>{status.message}</div>}
 
 					<button type="submit" className="btn btn-primary" disabled={loading}>
 						{loading ? 'Creating account...' : 'Create account'}

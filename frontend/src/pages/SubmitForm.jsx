@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FormInput from '../components/FormInput'
 import { createSubmission } from '../services/submissionService'
+import { getProjects } from '../services/projectService'
+import { saveOffline } from '../services/db'
 import { useAuth } from '../context/AuthContext'
 
 const activityOptions = [
@@ -76,6 +78,29 @@ const SubmitForm = () => {
 	})
 	const [status, setStatus] = useState(null)
 	const [loading, setLoading] = useState(false)
+	const [projects, setProjects] = useState([])
+
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const data = await getProjects()
+				setProjects(data)
+			} catch (error) {
+				console.error('Failed to fetch projects', error)
+			}
+		}
+		fetchProjects()
+	}, [])
+
+	const handleProjectChange = (e) => {
+		const code = e.target.value
+		const proj = projects.find(p => p.code === code)
+		setForm(prev => ({
+			...prev,
+			projectCode: code,
+			projectName: proj ? proj.name : ''
+		}))
+	}
 
 	const handleChange = (event) => {
 		const { name, value, type, checked } = event.target
@@ -183,8 +208,14 @@ const SubmitForm = () => {
 		}
 
 		try {
-			await createSubmission(payload)
-			setStatus({ type: 'success', message: 'Submission saved successfully.' })
+			if (!navigator.onLine) {
+				await saveOffline(payload)
+				setStatus({ type: 'success', message: 'You are offline. Submission saved locally and will automatically sync when you reconnect.' })
+			} else {
+				await createSubmission(payload)
+				setStatus({ type: 'success', message: 'Submission saved successfully.' })
+			}
+
 			setForm((prev) => ({
 				...prev,
 				beneficiaryCount: '',
@@ -340,18 +371,15 @@ const SubmitForm = () => {
 					<div className="form-grid">
 						<FormInput
 							id="projectCode"
-							label="Project code"
+							label="Project"
+							as="select"
 							value={form.projectCode}
-							onChange={handleChange}
-							placeholder="Clean Water 2024"
+							onChange={handleProjectChange}
+							options={[
+								{ value: '', label: 'Select a project' },
+								...projects.map(p => ({ value: p.code, label: `${p.name} (${p.code})` }))
+							]}
 							required
-						/>
-						<FormInput
-							id="projectName"
-							label="Project name"
-							value={form.projectName}
-							onChange={handleChange}
-							placeholder="Safe Water Initiative"
 						/>
 						<FormInput
 							id="region"

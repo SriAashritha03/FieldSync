@@ -35,6 +35,30 @@ const Sidebar = () => {
 						>
 							Reports
 						</NavLink>
+						<NavLink
+							to="/admin/users"
+							className={({ isActive }) =>
+								isActive ? 'nav-link active' : 'nav-link'
+							}
+						>
+							Users
+						</NavLink>
+						<NavLink
+							to="/admin/projects"
+							className={({ isActive }) =>
+								isActive ? 'nav-link active' : 'nav-link'
+							}
+						>
+							Projects
+						</NavLink>
+						<NavLink
+							to="/admin/audit"
+							className={({ isActive }) =>
+								isActive ? 'nav-link active' : 'nav-link'
+							}
+						>
+							Audit Logs
+						</NavLink>
 					</>
 				)}
 

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ReactApexChart from 'react-apexcharts'
 import Loading from '../components/Loading'
 import { fetchMetrics, fetchSubmissions } from '../services/submissionService'
 import { fetchInsights } from '../services/aiService'
@@ -14,6 +15,52 @@ const AdminDashboard = () => {
 	const actualTotal = metrics?.totalBeneficiaries || 0
 	const progressPercent =
 		targetTotal > 0 ? Math.min(100, Math.round((actualTotal / targetTotal) * 100)) : 0
+	const regionStats = metrics?.regionStats || []
+	const activityStats = metrics?.activityStats || []
+	const regionCategories = useMemo(
+		() => regionStats.map((item) => item._id),
+		[regionStats]
+	)
+	const regionSeries = useMemo(
+		() => [{ name: 'Activities', data: regionStats.map((item) => item.count) }],
+		[regionStats]
+	)
+	const activityLabels = useMemo(
+		() => activityStats.map((item) => item._id),
+		[activityStats]
+	)
+	const activitySeries = useMemo(
+		() => activityStats.map((item) => item.count),
+		[activityStats]
+	)
+
+	const regionChartOptions = useMemo(
+		() => ({
+			chart: { type: 'bar', toolbar: { show: false } },
+			plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
+			dataLabels: { enabled: false },
+			colors: ['#0f766e'],
+			xaxis: {
+				categories: regionCategories,
+				labels: { style: { colors: '#6c6a63', fontSize: '12px' } },
+			},
+			yaxis: { labels: { style: { colors: '#6c6a63', fontSize: '12px' } } },
+			grid: { borderColor: '#e5dfd2' },
+		}),
+		[regionCategories]
+	)
+
+	const activityChartOptions = useMemo(
+		() => ({
+			chart: { type: 'donut' },
+			labels: activityLabels,
+			colors: ['#0f766e', '#f59e0b', '#1f2937', '#6b7280', '#9ca3af'],
+			legend: { position: 'bottom', labels: { colors: '#6c6a63' } },
+			dataLabels: { enabled: false },
+			stroke: { colors: ['#fffaf2'] },
+		}),
+		[activityLabels]
+	)
 
 	useEffect(() => {
 		let mounted = true
@@ -147,19 +194,54 @@ const AdminDashboard = () => {
 				</div>
 			</div>
 
+			<div className="chart-grid">
+				<div className="card chart-card">
+					<div className="card-header">
+						<h3>Regional activity</h3>
+						<span className="badge">Bar</span>
+					</div>
+					{regionStats.length === 0 ? (
+						<p className="subtext">No regional data yet.</p>
+					) : (
+						<ReactApexChart
+							options={regionChartOptions}
+							series={regionSeries}
+							type="bar"
+							height={280}
+						/>
+					)}
+				</div>
+				<div className="card chart-card">
+					<div className="card-header">
+						<h3>Activity distribution</h3>
+						<span className="badge">Donut</span>
+					</div>
+					{activityStats.length === 0 ? (
+						<p className="subtext">No activity mix yet.</p>
+					) : (
+						<ReactApexChart
+							options={activityChartOptions}
+							series={activitySeries}
+							type="donut"
+							height={280}
+						/>
+					)}
+				</div>
+			</div>
+
 			<div className="card">
 				<div className="card-header">
 					<h3>Geographic coverage</h3>
 					<span className="badge">Heatmap ready</span>
 				</div>
 				<div className="stack">
-					{(metrics?.regionStats || []).slice(0, 5).map((item) => (
+					{regionStats.slice(0, 5).map((item) => (
 						<div key={item._id} className="stack-row">
 							<span>{item._id}</span>
 							<strong>{item.count}</strong>
 						</div>
 					))}
-					{(!metrics?.regionStats || metrics.regionStats.length === 0) && (
+					{regionStats.length === 0 && (
 						<p className="subtext">No geo data yet.</p>
 					)}
 				</div>

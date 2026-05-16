@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "apexcharts": "^4.7.0",
     "axios": "^1.16.1",
     "react": "^19.2.6",
+    "react-apexcharts": "^1.7.0",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1"
   },
